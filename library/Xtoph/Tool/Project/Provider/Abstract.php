@@ -34,18 +34,5 @@ require_once 'Zend/Tool/Project/Provider/Abstract.php';
 abstract class Xtoph_Tool_Project_Provider_Abstract
     extends Zend_Tool_Project_Provider_Abstract
 {
-
-   public function initialize()
-   {
-      parent::initialize();
-
-      $contextRegistry = Zend_Tool_Project_Context_Repository::getInstance();
-      if (!$contextRegistry->hasContext('PropelDirectory')) {
-         $contextRegistry->addContextsFromDirectory(
-             dirname(dirname(__FILE__)) . '/Context/Propel/',
-             'Xtoph_Tool_Project_Context_Propel_'
-         );
-      }
-   }
-
+   
 }

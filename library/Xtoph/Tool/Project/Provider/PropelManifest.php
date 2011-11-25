@@ -46,6 +46,14 @@ Zend_Tool_Framework_Manifest_ProviderManifestable
       // the order here will represent what the output will look like when iterating a manifest
 
       Zend_Loader_Autoloader::getInstance()->registerNamespace('Xtoph_');
+      
+      $contextRegistry = Zend_Tool_Project_Context_Repository::getInstance();
+      if (!$contextRegistry->hasContext('PropelDirectory')) {
+         $contextRegistry->addContextsFromDirectory(
+             dirname(dirname(__FILE__)) . '/Context/Propel/',
+             'Xtoph_Tool_Project_Context_Propel_'
+         );
+      }
 
       return array(
           'Xtoph_Tool_Project_Provider_Propel',

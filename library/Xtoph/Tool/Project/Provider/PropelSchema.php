@@ -31,19 +31,115 @@ require_once 'Zend/Tool/Project/Provider/Exception.php';
  */
 class Xtoph_Tool_Project_Provider_PropelSchema
     extends Xtoph_Tool_Project_Provider_Abstract
+    implements Zend_Tool_Framework_Provider_Pretendable
 {
 
-   public function create()
+   protected function _createFilesResources(
+   Zend_Tool_Project_Profile_Resource $schemaResource, $database)
    {
-      $this->_registry->getResponse()->appendContent('TODO: create action in propel-schema provider');
+      $resources = array(
+          $schemaResource->createResource('SchemaFile',
+              array(
+              'file' => 'schema.xml',
+              'database' => $database
+          )),
+          $schemaResource->createResource('PropertiesFile',
+              array(
+              'file' => 'build.properties'
+          )),
+          $schemaResource->createResource('RuntimeConfigFile',
+              array(
+              'file' => 'runtime-conf.xml'
+          ))
+      );
+      if (!$this->_registry->getRequest()->isPretend()) {
+         foreach ($resources as $resource) {
+            $resource->create();
+         }
+      }
+      return $resources;
    }
 
-   public function delete()
+   public static function createResource($profile, $schema)
+   {
+      $propelDirectory = $profile->search(array('propelDirectory'));
+      $schemaDirectory = $propelDirectory->createResource('SchemaDirectory',
+          array(
+          'schemaName' => $schema
+          ));
+      $schemaDirectory->setFileSystemName($schema);
+      return $schemaDirectory;
+   }
+
+   protected static function _getPropelDirectory($profile, $schema)
+   {
+      $profileSearchParams = array();
+      $profileSearchParams[] = 'propelDirectory';
+      return $profile->search($profileSearchParams);
+   }
+
+   public static function hasResource(Zend_Tool_Project_Profile $profile,
+       $schema)
+   {
+      $propelDirectory = self::_getPropelDirectory($profile, $schema);
+      if (!$propelDirectory
+          || !$propelDirectory instanceof Zend_Tool_Project_Profile_Resource
+          || !$propelDirectory->isEnabled()) {
+         throw new Zend_Tool_Project_Provider_Exception('Propel is not yet enabled for this project.');
+      }
+      return ($propelDirectory && ($propelDirectory->search(array('schemaDirectory' => array('schemaName' => $schema)))) instanceof Zend_Tool_Project_Profile_Resource);
+   }
+
+   public function create($schema, $filesIncluded = true, $database = 'db')
+   {
+      $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+
+      // get request & response
+      $request = $this->_registry->getRequest();
+      $response = $this->_registry->getResponse();
+
+      $schema = (string) $schema;
+      if (self::hasResource($this->_loadedProfile, $schema)) {
+         throw new Zend_Tool_Project_Provider_Exception('This project has already a Propel schema named ' . $schema);
+      }
+      try {
+         $schemaResource = self::createResource($this->_loadedProfile, $schema);
+         if ($filesIncluded) {
+            $resources = $this->_createFilesResources($schemaResource, $database);
+         }
+      } catch (Exception $e) {
+         $response->setException($e);
+         return;
+      }
+      if ($request->isPretend()) {
+         $response->appendContent('Would create schema ' . $schema . ' at ' .
+             $schemaResource->getParentResource()->getContext()->getPath());
+         if (isset($resources)) {
+            $response->appendContent('Would create default files for schema ' . $schema);
+            $response->appendContent('`-- schema.xml');
+            $response->appendContent('`-- build.properties');
+            $response->appendContent('`-- runtime-conf.xml');
+         }
+      } else {
+         $response->appendContent('Creating schema ' . $schema . ' at ' .
+             $schemaResource->getParentResource()->getContext()->getPath());
+         if (isset($resources)) {
+            $response->appendContent('Creating default files for schema ' . $schema);
+            $response->appendContent('`-- schema.xml');
+            $response->appendContent('`-- build.properties');
+            $response->appendContent('`-- runtime-conf.xml');
+         }
+         $schemaResource->create();
+         $this->_storeProfile();
+      }
+   }
+
+   public function delete($schema)
    {
       $this->_registry->getResponse()->appendContent('TODO: delete action in propel-schema provider');
    }
 
-   public function show()
+   public function show($schema)
    {
       $this->_registry->getResponse()->appendContent('TODO: show action in propel-schema provider');
    }

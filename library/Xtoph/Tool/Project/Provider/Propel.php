@@ -7,29 +7,20 @@ class Xtoph_Tool_Project_Provider_Propel
     extends Xtoph_Tool_Project_Provider_Abstract
 {
 
-   public static function createPropelResource(Zend_Tool_Project_Profile $profile)
+   protected static function _createPropelResource(Zend_Tool_Project_Profile $profile)
    {
       $projectDirectory = $profile->search(array('projectDirectory'));
       $resource = $projectDirectory->createResource('PropelDirectory',
           array(
-          'enabled' => 'false'
+          'Enabled' => 'false'
           ));
       return $resource;
    }
 
    protected static function _getPropelDirectoryResource(Zend_Tool_Project_Profile $profile)
    {
-      $profileSearchParams = array('PropelDirectory');
+      $profileSearchParams = array('propelDirectory');
       return $profile->search($profileSearchParams);
-   }
-
-   protected function _getDefaultDatabaseSchema($database)
-   {
-      $schema = <<<EOT
-<database name="{$database}" defaultIdMethod="native">
-</database>
-EOT;
-      return $schema;
    }
 
    public function Enable()
@@ -40,37 +31,26 @@ EOT;
 
       if (!$propelDirectoryResource = self::_getPropelDirectoryResource($this->_loadedProfile)) {
          try {
-            $response->appendContent('Try to create propel resource in project');
-            $propelDirectoryResource = self::createPropelResource($this->_loadedProfile);
+            $propelDirectoryResource = self::_createPropelResource($this->_loadedProfile);
          } catch (Exception $e) {
             $response->appendContent('Create propel resource in project failed');
             throw $e;
          }
       } else {
-         $response->appendContent('Notice: propel resource already exists in project profile');
+         $response->appendContent('Propel resource already exists in project profile');
       }
-
-      $this->_loadedProfile->storeToFile();
-
-      exit();
       if ($propelDirectoryResource->isEnabled()) {
          throw new Zend_Tool_Project_Provider_Exception('This project already has propel enabled.');
       } else {
          if ($this->_registry->getRequest()->isPretend()) {
-            $this->_registry->getResponse()->appendContent('Would enable propel directory at ' . $propelDirectoryResource->getContext()->getPath());
+            $this->_registry->getResponse()->appendContent("Would enable propel directory at '" . $propelDirectoryResource->getContext()->getPath() . "'");
          } else {
-            $this->_registry->getResponse()->appendContent('Enabling propel directory at ' . $propelDirectoryResource->getContext()->getPath());
+            $this->_registry->getResponse()->appendContent("Enable propel directory at '" . $propelDirectoryResource->getContext()->getPath() . "'");
             $propelDirectoryResource->setEnabled(true);
             $propelDirectoryResource->create();
             $this->_storeProfile();
          }
       }
-      $this->_registry->getResponse()->appendContent(
-          'Note: Create folder src/propel', array('color' => array('yellow'))
-      );
-      //TODO create empty src/propel/schema.xml
-      //TODO create empty src/propel/build.properties
-      //TODO create empty src/propel/runtime-conf.xml
    }
 
 }
