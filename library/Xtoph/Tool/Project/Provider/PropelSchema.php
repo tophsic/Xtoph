@@ -45,11 +45,13 @@ class Xtoph_Tool_Project_Provider_PropelSchema
           )),
           $schemaResource->createResource('PropertiesFile',
               array(
-              'file' => 'build.properties'
+              'file' => 'build.properties',
+              'project' => $schemaResource->getSchemaName()
           )),
           $schemaResource->createResource('RuntimeConfigFile',
               array(
-              'file' => 'runtime-conf.xml'
+              'file' => 'runtime-conf.xml',
+              'project' => $schemaResource->getSchemaName()
           ))
       );
       if (!$this->_registry->getRequest()->isPretend()) {

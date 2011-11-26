@@ -40,6 +40,8 @@ class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
     implements Xtoph_Tool_Project_Context_Propel_Interface
 {
 
+   protected $_project = null;
+   
    protected $_runtimeConfigName = 'runtime-conf.xml';
 
    /**
@@ -54,6 +56,7 @@ class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
    public function init()
    {
       $this->_runtimeConfigName = $this->_resource->getAttribute('file');
+      $this->_project = $this->_resource->getAttribute('project');
       $this->_filesystemName = $this->_runtimeConfigName;
       parent::init();
    }
@@ -92,7 +95,25 @@ class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
 
    public function getContents()
    {
-      parent::getContents();
+      $conf = <<<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <propel>
+    <datasources default="{$this->_project}">
+      <datasource id="{$this->_project}">
+        <adapter>sqlite</adapter>
+        <connection>
+          <dsn>sqlite:</dsn>
+          <user/>
+          <password/>
+        </connection>
+      </datasource>
+    </datasources>
+  </propel>
+</config>
+
+EOT;
+      return $conf;
    }
 
 }

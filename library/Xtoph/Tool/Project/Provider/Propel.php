@@ -23,7 +23,7 @@ class Xtoph_Tool_Project_Provider_Propel
       return $profile->search($profileSearchParams);
    }
 
-   public function Enable()
+   public function enable()
    {
       $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
 
@@ -52,52 +52,8 @@ class Xtoph_Tool_Project_Provider_Propel
          }
       }
    }
-
+   public function config($schema = null, $database = null, $table = null)
+   {
+      
+   }
 }
-
-/*
- * 
- *   <table name="match" phpName="Match">
-    <column name="pk_match" phpName="PkMatch" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
-    <column name="date" phpName="Date" type="DATE" required="false"/>
-    <column name="set_1" phpName="Set1" type="VARCHAR" size="4" required="false"/>
-    <column name="set_2" phpName="Set2" type="VARCHAR" size="4" required="false"/>
-    <column name="set_3" phpName="Set3" type="VARCHAR" size="4" required="false"/>
-    <column name="player_fk_player1" phpName="PlayerFkPlayer1" type="INTEGER" size="11" required="true"/>
-    <column name="player_fk_player2" phpName="PlayerFkPlayer2" type="INTEGER" size="11" required="true"/>
-    <validator column="pk_match">
-      <rule name="required" message="The field pk_match is required."/>
-    </validator>
-    <!--    <validator column="date">
-      <rule name="type" value="string" message="The column date must be an string value."/>
-    </validator>-->
-    <validator column="set_1">
-      <rule name="minLength" value="4" message="The field set_1 must be 4 characters long."/>
-      <rule name="maxLength" value="4" message="The field set_1 must be not longer than 4 characters."/>
-      <rule name="class" class="propel.validator.SetValidator" message="Sets should be valid (see Badminton rules)."/>
-    </validator>
-    <validator column="set_2">
-      <rule name="minLength" value="4" message="The field set_2 must be 4 characters long."/>
-      <rule name="maxLength" value="4" message="The field set_2 must be not longer than 4 characters."/>
-      <rule name="class" class="propel.validator.SetValidator" message="Sets should be valid (see Badminton rules)."/>
-    </validator>
-    <validator column="set_3">
-      <rule name="minLength" value="4" message="The field set_3 must be 4 characters long."/>
-      <rule name="maxLength" value="4" message="The field set_3 must be not longer than 4 characters."/>
-      <rule name="class" class="propel.validator.SetValidator" message="Sets should be valid (see Badminton rules)."/>
-    </validator>
-    <validator column="player_fk_player1">
-      <rule name="required" message="The field player_fk_player1 is required."/>
-    </validator>
-    <validator column="player_fk_player2">
-      <rule name="required" message="The field player_fk_player2 is required."/>
-    </validator>
-    <foreign-key foreignTable="player" name="fk_match_player2" skipSql="true" onDelete="RESTRICT" onUpdate="RESTRICT">
-      <reference local="player_fk_player1" foreign="pk_player"/>
-    </foreign-key>
-    <foreign-key foreignTable="player" name="fk_match_player1" skipSql="true" onDelete="RESTRICT" onUpdate="RESTRICT">
-      <reference local="player_fk_player2" foreign="pk_player"/>
-    </foreign-key>
-  </table>
-
- */

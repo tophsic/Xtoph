@@ -95,6 +95,7 @@ class Xtoph_Tool_Project_Context_Propel_SchemaFile
    public function getContents()
    {
       $schema = <<<EOT
+<?xml version="1.0" encoding="utf-8"?>
 <database name="{$this->_database}" defaultIdMethod="native">
 </database>
 

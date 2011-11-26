@@ -40,6 +40,7 @@ class Xtoph_Tool_Project_Context_Propel_PropertiesFile
     implements Xtoph_Tool_Project_Context_Propel_Interface
 {
 
+   protected $_project        = null;
    protected $_propertiesFile = 'build.properties';
 
    /**
@@ -54,6 +55,7 @@ class Xtoph_Tool_Project_Context_Propel_PropertiesFile
    public function init()
    {
       $this->_propertiesFile = $this->_resource->getAttribute('file');
+      $this->_project = $this->_resource->getAttribute('project');
       $this->_filesystemName = $this->_propertiesFile;
       parent::init();
    }
@@ -92,7 +94,37 @@ class Xtoph_Tool_Project_Context_Propel_PropertiesFile
 
    public function getContents()
    {
-      parent::getContents();
+      $properties = <<<EOT
+# General Build Settings
+propel.project                         = {$this->_project}
+propel.schema.validate                 = true
+
+# Database Settings
+propel.database                        = sqlite
+propel.database.url                    = sqlite:\${propel.output.dir}/db.sq3
+#propel.database.user                   = 
+#propel.database.password               = 
+
+# Reverse-Engineering Settings
+propel.addValidators                   = all
+
+# Customizing Generated Object Model
+propel.addValidateMethod               = true
+#propel.basePrefix                      = 
+#propel.classPrefix                     = 
+propel.addIncludes                     = true
+
+# Mysql-specific Settings
+propel.mysql.tableType                 = InnoDB
+
+# Directories
+propel.output.dir                      = \${propel.project.dir}/../../application/models/
+propel.php.dir                         = \${propel.output.dir}/
+propel.phpconf.dir                     = \${propel.project.dir}/../../application/configs/
+propel.sql.dir                         = \${propel.project.dir}/sql/
+
+EOT;
+      return $properties;
    }
 
 }
