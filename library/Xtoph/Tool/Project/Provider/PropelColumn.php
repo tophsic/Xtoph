@@ -33,6 +33,15 @@ class Xtoph_Tool_Project_Provider_PropelColumn
     extends Xtoph_Tool_Project_Provider_PropelAbstract
     implements Zend_Tool_Framework_Provider_Pretendable
 {
+   const TYPE_VARCHAR = 'VARCHAR';
+   const TYPE_INTEGER = 'INTEGER';
+
+   protected $_specialties = array(
+       'PrimaryKey',
+       'Required',
+       'Size',
+       'Type'
+   );
 
    protected function _setColumnAttributes($name, $value, $column, $table,
        Xtoph_Tool_Project_Propel_Schema $schema)
@@ -82,8 +91,8 @@ class Xtoph_Tool_Project_Provider_PropelColumn
       }
    }
 
-   public function setAttribute($name, $value, $column = null,
-       $table = null, $schema = null)
+   public function setAttribute($name, $value, $column = null, $table = null,
+       $schema = null)
    {
       $request = $this->_registry->getRequest();
       $response = $this->_registry->getResponse();
@@ -92,7 +101,8 @@ class Xtoph_Tool_Project_Provider_PropelColumn
 
          $this->initializeSchema($schema);
 
-         $attributes = $this->_setColumnAttributes($name, $value, $column, $table, $this->_loadedSchema);
+         $attributes = $this->_setColumnAttributes($name, $value, $column,
+             $table, $this->_loadedSchema);
 
          if (!is_null($attributes)) {
             if ($request->isPretend()) {
@@ -105,6 +115,26 @@ class Xtoph_Tool_Project_Provider_PropelColumn
             throw new Zend_Tool_Project_Profile_Exception('Column attribute creation failed');
          }
       }
+   }
+
+   public function setAttributeRequired($value = true)
+   {
+      
+   }
+
+   public function setAttributePrimaryKey($value = true)
+   {
+      
+   }
+
+   public function setAttributeSize($value = '0')
+   {
+      
+   }
+
+   public function setAttributeType($value = self::TYPE_VARCHAR)
+   {
+      
    }
 
    public function delete()
