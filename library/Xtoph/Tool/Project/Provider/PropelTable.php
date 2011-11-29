@@ -39,7 +39,7 @@ class Xtoph_Tool_Project_Provider_PropelTable
    {
       $table = null;
       if ($schema->hasTable($name) && $force === false) {
-         $this->_registry->getResponse()->appendContent("Table $name already exists");
+         throw new Zend_Tool_Project_Profile_Exception("Table '$name' already exists");
       } else {
          if ($force == true) {
             $schema->removeTable($name);
@@ -69,7 +69,10 @@ class Xtoph_Tool_Project_Provider_PropelTable
                $this->_storeSchema();
             }
          }
+      } else {
+         throw new Zend_Tool_Project_Profile_Exception('Schema name should be provided');
       }
+      
    }
 
    public function delete()

@@ -34,12 +34,22 @@ class Xtoph_Tool_Project_Provider_PropelColumn
     implements Zend_Tool_Framework_Provider_Pretendable
 {
 
+   protected function _setColumnAttributes($name, $value, $column, $table,
+       Xtoph_Tool_Project_Propel_Schema $schema)
+   {
+      if (!$schema->hasColumn($column, $table)) {
+         throw new Zend_Tool_Project_Provider_Exception("Column '$column' does not exists in table '$table'");
+      }
+      $attribute = $schema->setColumnAttribute($name, $value, $column, $table);
+      return $attribute;
+   }
+
    protected function _createColumn($name, $table, $force,
        Xtoph_Tool_Project_Propel_Schema $schema)
    {
       $column = null;
       if ($schema->hasColumn($name, $table) && $force === false) {
-         $this->_registry->getResponse()->appendContent("Column '$name' already exists in table '$table'");
+         throw new Zend_Tool_Project_Provider_Exception("Column '$name' already exists in table '$table'");
       } else {
          if ($force == true) {
             $schema->removeColumn($name, $table);
@@ -49,8 +59,7 @@ class Xtoph_Tool_Project_Provider_PropelColumn
       return $column;
    }
 
-   public function create($name, $table = null, $schema = null,
-       $force = false)
+   public function create($name, $table = null, $schema = null, $force = false)
    {
       $request = $this->_registry->getRequest();
       $response = $this->_registry->getResponse();
@@ -59,7 +68,8 @@ class Xtoph_Tool_Project_Provider_PropelColumn
 
          $this->initializeSchema($schema);
 
-         $column = $this->_createColumn($name, $table, $force, $this->_loadedSchema);
+         $column = $this->_createColumn($name, $table, $force,
+             $this->_loadedSchema);
 
          if (!is_null($column)) {
             if ($request->isPretend()) {
@@ -71,10 +81,30 @@ class Xtoph_Tool_Project_Provider_PropelColumn
          }
       }
    }
-   
-   public function setAttribute($attribute, $value, $column = null, $table = null, $schema = null, $force = false)
+
+   public function setAttribute($name, $value, $column = null,
+       $table = null, $schema = null)
    {
-      
+      $request = $this->_registry->getRequest();
+      $response = $this->_registry->getResponse();
+
+      if (!is_null($schema)) {
+
+         $this->initializeSchema($schema);
+
+         $attributes = $this->_setColumnAttributes($name, $value, $column, $table, $this->_loadedSchema);
+
+         if (!is_null($attributes)) {
+            if ($request->isPretend()) {
+               $response->appendContent("Would create column attribute '$name' in column '$table.$column'");
+            } else {
+               $response->appendContent("Creating column attribute '$name' in column '$table.$column'");
+               $this->_storeSchema();
+            }
+         } else {
+            throw new Zend_Tool_Project_Profile_Exception('Column attribute creation failed');
+         }
+      }
    }
 
    public function delete()

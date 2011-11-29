@@ -118,13 +118,20 @@ class Xtoph_Tool_Project_Propel_Schema
    public function getColumn($name, $table, $first = false)
    {
       $a = $this->_xpath(sprintf(
-                  self::XPATH_TABLE . '/' . self::XPATH_COLUMN, $table, $name
-              ));
+              self::XPATH_TABLE . '/' . self::XPATH_COLUMN, $table, $name
+          ));
       if ($first) {
          return $a[0];
       } else {
          return $a;
       }
+   }
+
+   public function setColumnAttribute($name, $value, $column, $table)
+   {
+      $column = $this->getColumn($column, $table, true);
+      $column[$name] = $value;
+      return $column[$name];
    }
 
    /**
