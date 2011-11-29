@@ -41,7 +41,7 @@ class Xtoph_Tool_Project_Provider_PropelTable
       if ($schema->hasTable($name) && $force === false) {
          $this->_registry->getResponse()->appendContent("Table $name already exists");
       } else {
-         if ($force === true) {
+         if ($force == true) {
             $schema->removeTable($name);
          }
          $table = $schema->addTable($name);
@@ -63,9 +63,9 @@ class Xtoph_Tool_Project_Provider_PropelTable
 
          if (!is_null($table)) {
             if ($request->isPretend()) {
-               $response->appendContent('Would create table ' . $name);
+               $response->appendContent("Would create table '$name'");
             } else {
-               $response->appendContent('Creating table ' . $name);
+               $response->appendContent("Creating table '$name'");
                $this->_storeSchema();
             }
          }

@@ -30,11 +30,51 @@ require_once 'Zend/Tool/Project/Provider/Exception.php';
  * @license    http://christophe.plom.net/license/new-bsd     New BSD License
  */
 class Xtoph_Tool_Project_Provider_PropelColumn
-    extends Xtoph_Tool_Project_Provider_Abstract
+    extends Xtoph_Tool_Project_Provider_PropelAbstract
+    implements Zend_Tool_Framework_Provider_Pretendable
 {
-   public function create()
+
+   protected function _createColumn($name, $table, $force,
+       Xtoph_Tool_Project_Propel_Schema $schema)
    {
-      $this->_registry->getResponse()->appendContent('TODO: create action in propel-column provider');
+      $column = null;
+      if ($schema->hasColumn($name, $table) && $force === false) {
+         $this->_registry->getResponse()->appendContent("Column '$name' already exists in table '$table'");
+      } else {
+         if ($force == true) {
+            $schema->removeColumn($name, $table);
+         }
+         $column = $schema->addColumn($name, $table);
+      }
+      return $column;
+   }
+
+   public function create($name, $table = null, $schema = null,
+       $force = false)
+   {
+      $request = $this->_registry->getRequest();
+      $response = $this->_registry->getResponse();
+
+      if (!is_null($schema)) {
+
+         $this->initializeSchema($schema);
+
+         $column = $this->_createColumn($name, $table, $force, $this->_loadedSchema);
+
+         if (!is_null($column)) {
+            if ($request->isPretend()) {
+               $response->appendContent("Would create column '$name' in table '$table'");
+            } else {
+               $response->appendContent("Creating column '$name' in table '$table'");
+               $this->_storeSchema();
+            }
+         }
+      }
+   }
+   
+   public function setAttribute($attribute, $value, $column = null, $table = null, $schema = null, $force = false)
+   {
+      
    }
 
    public function delete()
