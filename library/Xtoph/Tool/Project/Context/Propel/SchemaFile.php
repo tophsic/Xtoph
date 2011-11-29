@@ -102,5 +102,14 @@ class Xtoph_Tool_Project_Context_Propel_SchemaFile
 EOT;
       return $schema;
    }
+   
+   public function save(Xtoph_Tool_Project_Propel_Schema $schema)
+   {
+      $xml = $schema->getXml();
+      if (!empty($xml)) {
+         file_put_contents($this->getPath(), $schema->getXML());
+      }
+      return $this;
+   }
 
 }
