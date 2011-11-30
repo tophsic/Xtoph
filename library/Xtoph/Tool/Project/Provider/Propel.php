@@ -5,7 +5,13 @@ require_once 'Zend/Tool/Project/Provider/Exception.php';
 
 class Xtoph_Tool_Project_Provider_Propel
     extends Xtoph_Tool_Project_Provider_Abstract
+    implements Zend_Tool_Framework_Provider_Pretendable
 {
+
+   public static function setActiveValues($schema, $table, $column)
+   {
+      
+   }
 
    protected static function _createPropelResource(Zend_Tool_Project_Profile $profile)
    {
@@ -52,8 +58,13 @@ class Xtoph_Tool_Project_Provider_Propel
          }
       }
    }
-   public function config($schema = null, $database = null, $table = null)
+
+   public function setAv($schema = null, $table = null, $column = null)
    {
-      
+      $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+
+      $response = $this->_registry->getResponse();
+      self::setActiveValues($schema, $table, $column);
    }
+
 }
