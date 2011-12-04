@@ -48,6 +48,75 @@ class Xtoph_Tool_Project_Context_Propel_PropertiesFile
     */
    protected $_filesystemName = 'build.properties';
 
+   protected function _getSqliteContents($project)
+   {
+      return <<<EOT
+# General Build Settings
+propel.project                         = {$project}
+propel.schema.validate                 = true
+
+# Database Settings
+propel.database                        = sqlite
+propel.database.url                    = sqlite:\${propel.output.dir}/db.sq3
+#propel.database.user                   = 
+#propel.database.password               = 
+
+# Customizing Generated Object Model
+propel.addValidateMethod               = true
+#propel.basePrefix                      = 
+#propel.classPrefix                     = 
+propel.addIncludes                     = true
+
+# Directories
+propel.output.dir                      = \${propel.project.dir}/../../application/models/
+propel.php.dir                         = \${propel.output.dir}/
+propel.phpconf.dir                     = \${propel.project.dir}/../../application/configs/
+propel.sql.dir                         = \${propel.project.dir}/sql/
+
+# Migrations
+propel.migration.table                 = propel_migration
+propel.migration.caseInsensitive       = true
+propel.migration.dir                   = \${propel.project.dir}/migrations
+
+EOT;
+   }
+
+   protected function _getMysqlContents($project, $user = 'root', $password = '')
+   {
+      return <<<EOT
+# General Build Settings
+propel.project                         = {$project}
+propel.schema.validate                 = true
+
+# Database Settings
+propel.database                        = mysql
+propel.database.url                    = mysql:host=localhost;dbname={$project}
+propel.database.user                   = {$user}
+propel.database.password               = {$password}
+
+# Customizing Generated Object Model
+propel.addValidateMethod               = true
+#propel.basePrefix                      = 
+#propel.classPrefix                     = 
+propel.addIncludes                     = true
+
+# Mysql-specific Settings
+propel.mysql.tableType                 = MyIsam
+
+# Directories
+propel.output.dir                      = \${propel.project.dir}/../../application/models/
+propel.php.dir                         = \${propel.output.dir}/
+propel.phpconf.dir                     = \${propel.project.dir}/../../application/configs/
+propel.sql.dir                         = \${propel.project.dir}/sql/
+
+# Migrations
+propel.migration.table                 = propel_migration
+propel.migration.caseInsensitive       = true
+propel.migration.dir                   = \${propel.project.dir}/migrations
+
+EOT;
+   }
+
    /**
     * init()
     *
@@ -94,36 +163,17 @@ class Xtoph_Tool_Project_Context_Propel_PropertiesFile
 
    public function getContents()
    {
-      $properties = <<<EOT
-# General Build Settings
-propel.project                         = {$this->_project}
-propel.schema.validate                 = true
-
-# Database Settings
-propel.database                        = sqlite
-propel.database.url                    = sqlite:\${propel.output.dir}/db.sq3
-#propel.database.user                   = 
-#propel.database.password               = 
-
-# Reverse-Engineering Settings
-propel.addValidators                   = all
-
-# Customizing Generated Object Model
-propel.addValidateMethod               = true
-#propel.basePrefix                      = 
-#propel.classPrefix                     = 
-propel.addIncludes                     = true
-
-# Mysql-specific Settings
-propel.mysql.tableType                 = InnoDB
-
-# Directories
-propel.output.dir                      = \${propel.project.dir}/../../application/models/
-propel.php.dir                         = \${propel.output.dir}/
-propel.phpconf.dir                     = \${propel.project.dir}/../../application/configs/
-propel.sql.dir                         = \${propel.project.dir}/sql/
-
-EOT;
+      switch ($this->_resource->getAttribute('adapter')) {
+         case 'sqlite':
+            $properties = $this->_getSqliteContents($this->_project);
+            break;
+         case 'mysql':
+            $properties = $this->_getMysqlContents($this->_project);
+            break;
+         default:
+            throw new Zend_Tool_Project_Context_Exception('Unknown exception');
+            break;
+      }
       return $properties;
    }
 

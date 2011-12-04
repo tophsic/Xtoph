@@ -35,8 +35,11 @@ class Xtoph_Tool_Project_Provider_PropelSchema
 {
 
    protected function _createFilesResources(
-   Zend_Tool_Project_Profile_Resource $schemaResource, $database)
+   Zend_Tool_Project_Profile_Resource $schemaResource, $database, $adapter)
    {
+      if (!in_array($adapter, array('sqlite', 'mysql'))) {
+         throw new Zend_Tool_Project_Provider_Exception('Unknown adapter');
+      }
       $resources = array(
           $schemaResource->createResource('SchemaFile',
               array(
@@ -46,12 +49,20 @@ class Xtoph_Tool_Project_Provider_PropelSchema
           $schemaResource->createResource('PropertiesFile',
               array(
               'file' => 'build.properties',
-              'project' => $schemaResource->getSchemaName()
+              'project' => $schemaResource->getSchemaName(),
+              'adapter' => $adapter
           )),
-          $schemaResource->createResource('RuntimeConfigFile',
+          $schemaResource->createResource('ConnectionConfigFile',
               array(
               'file' => 'runtime-conf.xml',
-              'project' => $schemaResource->getSchemaName()
+              'project' => $schemaResource->getSchemaName(),
+              'adapter' => $adapter
+          )),
+          $schemaResource->createResource('ConnectionConfigFile',
+              array(
+              'file' => 'builtime-conf.xml',
+              'project' => $schemaResource->getSchemaName(),
+              'adapter' => $adapter
           ))
       );
       if (!$this->_registry->getRequest()->isPretend()) {
@@ -92,7 +103,7 @@ class Xtoph_Tool_Project_Provider_PropelSchema
       return ($propelDirectory && ($propelDirectory->search(array('schemaDirectory' => array('schemaName' => $schema)))) instanceof Zend_Tool_Project_Profile_Resource);
    }
 
-   public function create($schema, $filesIncluded = true, $database = 'db')
+   public function create($schema, $filesIncluded = true, $database = 'db', $adapter = "sqlite")
    {
       $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
 
@@ -107,7 +118,7 @@ class Xtoph_Tool_Project_Provider_PropelSchema
       try {
          $schemaResource = self::createResource($this->_loadedProfile, $schema);
          if ($filesIncluded) {
-            $resources = $this->_createFilesResources($schemaResource, $database);
+            $resources = $this->_createFilesResources($schemaResource, $database, $adapter);
          }
       } catch (Exception $e) {
          $response->setException($e);
@@ -121,6 +132,7 @@ class Xtoph_Tool_Project_Provider_PropelSchema
             $response->appendContent('`-- schema.xml');
             $response->appendContent('`-- build.properties');
             $response->appendContent('`-- runtime-conf.xml');
+            $response->appendContent('`-- buildtime-conf.xml');
          }
       } else {
          $response->appendContent('Creating schema ' . $schema . ' at ' .
@@ -130,6 +142,7 @@ class Xtoph_Tool_Project_Provider_PropelSchema
             $response->appendContent('`-- schema.xml');
             $response->appendContent('`-- build.properties');
             $response->appendContent('`-- runtime-conf.xml');
+            $response->appendContent('`-- buildtime-conf.xml');
          }
          $schemaResource->create();
          $this->_storeProfile();

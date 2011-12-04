@@ -35,14 +35,13 @@ require_once 'Xtoph/Tool/Project/Context/Propel/Interface.php';
  * @copyright  Christophe Sicard (http://christophe.plom.net)
  * @license    http://christophe.plom.net/license/new-bsd     New BSD License
  */
-class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
+class Xtoph_Tool_Project_Context_Propel_ConnectionConfigFile
     extends Zend_Tool_Project_Context_Filesystem_File
     implements Xtoph_Tool_Project_Context_Propel_Interface
 {
 
    protected $_project = null;
-   
-   protected $_runtimeConfigName = 'runtime-conf.xml';
+   protected $_connectionConfigName = 'runtime-conf.xml';
 
    /**
     * @var string
@@ -55,9 +54,9 @@ class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
     */
    public function init()
    {
-      $this->_runtimeConfigName = $this->_resource->getAttribute('file');
+      $this->_connectionConfigName = $this->_resource->getAttribute('file');
       $this->_project = $this->_resource->getAttribute('project');
-      $this->_filesystemName = $this->_runtimeConfigName;
+      $this->_filesystemName = $this->_connectionConfigName;
       parent::init();
    }
 
@@ -69,7 +68,7 @@ class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
    public function getPersistentAttributes()
    {
       return array(
-          'file' => $this->_runtimeConfigName
+          'file' => $this->_connectionConfigName
       );
    }
 
@@ -80,30 +79,49 @@ class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
     */
    public function getName()
    {
-      return 'RuntimeConfigFile';
+      return 'ConnectionConfigFile';
    }
 
-   public function setRuntimeConfigName($runtimeConfigName)
+   public function setConnectionConfigName($runtimeConfigName)
    {
-      $this->_runtimeConfigName = (string) $runtimeConfigName;
+      $this->_connectionConfigName = (string) $runtimeConfigName;
    }
 
-   public function getRuntimeConfigName()
+   public function getConnectionConfigName()
    {
-      return $this->_runtimeConfigName;
+      return $this->_connectionConfigName;
    }
 
    public function getContents()
    {
-      $conf = <<<EOT
+      switch ($this->_resource->getAttribute('adapter')) {
+         case 'sqlite':
+            $conf = $this->_getSqliteContents($this->_project);
+            break;
+         case 'mysql':
+            $conf = $this->_getMysqlContents($this->_project);
+            break;
+         default:
+            throw new Zend_Tool_Project_Context_Exception('Unknown adapter');
+            break;
+      }
+      return $conf;
+   }
+
+   protected function _getSqliteContents($project)
+   {
+      $path = $this->getBaseDirectory() . '/../../data/';
+      $path = realpath($path);
+      $path.= '/' . $project . '.db3';
+      return <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
   <propel>
-    <datasources default="{$this->_project}">
-      <datasource id="{$this->_project}">
+    <datasources default="{$project}">
+      <datasource id="{$project}">
         <adapter>sqlite</adapter>
         <connection>
-          <dsn>sqlite:</dsn>
+          <dsn>sqlite:{$path}</dsn>
           <user/>
           <password/>
         </connection>
@@ -113,7 +131,28 @@ class Xtoph_Tool_Project_Context_Propel_RuntimeConfigFile
 </config>
 
 EOT;
-      return $conf;
+   }
+
+   protected function _getMysqlContents($project, $user = "root", $password = "")
+   {
+      return <<<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <propel>
+    <datasources default="{$project}">
+      <datasource id="{$project}">
+        <adapter>mysql</adapter>
+        <connection>
+          <dsn>mysql:host=localhost;dbname=$project</dsn>
+          <user>{$user}</user>
+          <password>{$password}</password>
+        </connection>
+      </datasource>
+    </datasources>
+  </propel>
+</config>
+
+EOT;
    }
 
 }
