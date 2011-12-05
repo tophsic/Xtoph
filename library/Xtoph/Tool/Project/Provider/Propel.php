@@ -8,9 +8,26 @@ class Xtoph_Tool_Project_Provider_Propel
     implements Zend_Tool_Framework_Provider_Pretendable
 {
 
-   public static function setActiveValues($schema, $table, $column)
+   public static function setActiveValues(Zend_Tool_Project_Profile $profile,
+       $schema = '', $table = '', $column = '')
    {
-      
+      if (!$activeValuesResource = self::getActiveValuesResources($profile)) {
+         $activeValuesResource = self::_createActiveValuesResource($profile);
+      }
+      $activeValuesResource->setAttributes(array(
+          'schema' => $schema,
+          'table' => $table,
+          'column' => $column
+      ));
+      $context = $activeValuesResource->getContext();
+      $context->init();
+   }
+
+   protected static function _createActiveValuesResource(Zend_Tool_Project_Profile $profile)
+   {
+      $propelDirectory = self::_getPropelDirectoryResource($profile);
+      $resource = $propelDirectory->createResource('ActiveValues');
+      return $resource;
    }
 
    protected static function _createPropelResource(Zend_Tool_Project_Profile $profile)
@@ -18,9 +35,44 @@ class Xtoph_Tool_Project_Provider_Propel
       $projectDirectory = $profile->search(array('projectDirectory'));
       $resource = $projectDirectory->createResource('PropelDirectory',
           array(
-          'Enabled' => 'false'
+          'enabled' => 'false'
           ));
       return $resource;
+   }
+
+   public static function getActiveValuesResources(Zend_Tool_Project_Profile $profile)
+   {
+      $profileSearchParams = array('propelDirectory', 'activeValues');
+      return $profile->search($profileSearchParams);
+   }
+
+   public static function getActiveSchema(Zend_Tool_Project_Profile $profile, $schema)
+   {
+      $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
+      $activeSchema = $resource->getContext()->getSchema();
+      if (!empty($activeSchema)) {
+         $schema = $activeSchema;
+      }
+      return $schema;
+   }
+   public static function getActiveTable(Zend_Tool_Project_Profile $profile, $table)
+   {
+      $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
+      $activeTAble = $resource->getContext()->getTable();
+      if (!empty($activeTAble)) {
+         $table = $activeTAble;
+      }
+      return $table;
+   }
+   public static function getActiveColumn(Zend_Tool_Project_Profile $profile,
+       $column)
+   {
+      $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
+      $activeColumn = $resource->getContext()->getColumn();
+      if (!empty($activeColumn)) {
+         $column = $activeColumn;
+      }
+      return $column;
    }
 
    protected static function _getPropelDirectoryResource(Zend_Tool_Project_Profile $profile)
@@ -38,6 +90,7 @@ class Xtoph_Tool_Project_Provider_Propel
       if (!$propelDirectoryResource = self::_getPropelDirectoryResource($this->_loadedProfile)) {
          try {
             $propelDirectoryResource = self::_createPropelResource($this->_loadedProfile);
+            self::setActiveValues($this->_loadedProfile);
          } catch (Exception $e) {
             $response->appendContent('Create propel resource in project failed');
             throw $e;
@@ -64,7 +117,13 @@ class Xtoph_Tool_Project_Provider_Propel
       $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
 
       $response = $this->_registry->getResponse();
-      self::setActiveValues($schema, $table, $column);
+      self::setActiveValues($this->_loadedProfile, $schema, $table, $column);
+      if ($this->_registry->getRequest()->isPretend()) {
+         $this->_registry->getResponse()->appendContent("Would set active values");
+      } else {
+         $this->_registry->getResponse()->appendContent("Set active values: $schema, $table, $column");
+         $this->_storeProfile();
+      }
    }
 
 }

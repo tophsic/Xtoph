@@ -26,7 +26,7 @@
  * @copyright  Christophe Sicard (http://christophe.plom.net)
  * @license    http://christophe.plom.net/license/new-bsd     New BSD License
  */
-interface Xtoph_Tool_Project_Context_Propel_Interface
+interface Xtoph_Tool_Project_Context_Propel_Interface extends Zend_Tool_Project_Context_Interface
 {
 
 }

@@ -70,15 +70,26 @@ class Xtoph_Tool_Project_Provider_PropelColumn
 
    public function create($name, $table = null, $schema = null, $force = false)
    {
+      $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+
       $request = $this->_registry->getRequest();
       $response = $this->_registry->getResponse();
 
-      if (!is_null($schema)) {
+      $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile,
+              $schema);
+      $table = Xtoph_Tool_Project_Provider_Propel::getActiveTable($this->_loadedProfile,
+              $table);
 
-         $this->initializeSchema($schema);
+      if (!is_null($schema) && !is_null($table)) {
+
+         if (!$this->initializeSchema($schema)) {
+            throw new Zend_Tool_Project_Provider_Exception("Schema '$schema' could not be initialized");
+         }
 
          $column = $this->_createColumn($name, $table, $force,
              $this->_loadedSchema);
+         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile,
+             $schema, $table, $name);
 
          if (!is_null($column)) {
             if ($request->isPretend()) {
@@ -86,18 +97,32 @@ class Xtoph_Tool_Project_Provider_PropelColumn
             } else {
                $response->appendContent("Creating column '$name' in table '$table'");
                $this->_storeSchema();
+               $this->_storeProfile();
             }
          }
+      } else {
+         throw new Zend_Tool_Project_Profile_Exception('Schema and table names should be provided');
       }
    }
 
    public function setAttribute($name, $value, $column = null, $table = null,
        $schema = null)
    {
+      $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+      
       $request = $this->_registry->getRequest();
       $response = $this->_registry->getResponse();
 
-      if (!is_null($schema)) {
+      $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile,
+              $schema);
+      $table = Xtoph_Tool_Project_Provider_Propel::getActiveTable($this->_loadedProfile,
+              $table);
+      $column = Xtoph_Tool_Project_Provider_Propel::getActiveColumn($this->_loadedProfile,
+              $column);
+
+      if (!is_null($schema)
+          && !is_null($table)
+          && !is_null($column)) {
 
          $this->initializeSchema($schema);
 
@@ -114,6 +139,8 @@ class Xtoph_Tool_Project_Provider_PropelColumn
          } else {
             throw new Zend_Tool_Project_Profile_Exception('Column attribute creation failed');
          }
+      } else {
+         throw new Zend_Tool_Project_Profile_Exception('Schema, table and column names should be provided');
       }
    }
 

@@ -117,6 +117,7 @@ class Xtoph_Tool_Project_Provider_PropelSchema
       }
       try {
          $schemaResource = self::createResource($this->_loadedProfile, $schema);
+         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile, $schema);
          if ($filesIncluded) {
             $resources = $this->_createFilesResources($schemaResource, $database, $adapter);
          }

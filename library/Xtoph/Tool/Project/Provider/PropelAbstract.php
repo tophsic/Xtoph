@@ -79,6 +79,7 @@ abstract class Xtoph_Tool_Project_Provider_PropelAbstract
          }
 
          self::$_isSchemaInitialized = true;
+         return $this->_loadedSchema;
       }
    }
 

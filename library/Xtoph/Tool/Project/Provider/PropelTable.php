@@ -34,8 +34,8 @@ class Xtoph_Tool_Project_Provider_PropelTable
     implements Zend_Tool_Framework_Provider_Pretendable
 {
 
-   protected function _createTable($name, $force,
-       Xtoph_Tool_Project_Propel_Schema $schema)
+   protected function _createTable($name,
+       Xtoph_Tool_Project_Propel_Schema $schema, $force = false)
    {
       $table = null;
       if ($schema->hasTable($name) && $force === false) {
@@ -52,14 +52,21 @@ class Xtoph_Tool_Project_Provider_PropelTable
    public function create($name, $schema = null,
        $force = false)
    {
+      $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+
       $request = $this->_registry->getRequest();
       $response = $this->_registry->getResponse();
 
+      
+      $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile, $schema);
+
       if (!is_null($schema)) {
-
-         $this->initializeSchema($schema);
-
-         $table = $this->_createTable($name, $force, $this->_loadedSchema);
+         if (!$this->initializeSchema($schema)) {
+            throw new Zend_Tool_Project_Provider_Exception("Schema '$schema' could not be initialized");
+         }
+         
+         $table = $this->_createTable($name, $this->_loadedSchema, $force);
+         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile, $schema, $name);
 
          if (!is_null($table)) {
             if ($request->isPretend()) {
@@ -67,6 +74,7 @@ class Xtoph_Tool_Project_Provider_PropelTable
             } else {
                $response->appendContent("Creating table '$name'");
                $this->_storeSchema();
+               $this->_storeProfile();
             }
          }
       } else {

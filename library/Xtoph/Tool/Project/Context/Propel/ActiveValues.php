@@ -32,8 +32,28 @@ require_once 'Xtoph/Tool/Project/Context/Propel/Interface.php';
  * @license    http://christophe.plom.net/license/new-bsd     New BSD License
  */
 class Xtoph_Tool_Project_Context_Propel_ActiveValues
-    implements Xtoph_Tool_Project_Context_Propel_Interface, Zend_Tool_Project_Context_Interface
+    implements Xtoph_Tool_Project_Context_Propel_Interface
 {
+
+   /**
+    * @var string
+    */
+   protected $_schema;
+
+   /**
+    * @var string
+    */
+   protected $_table;
+
+   /**
+    * @var string
+    */
+   protected $_column;
+
+   /**
+    * @var Zend_Tool_Project_Profile_Resource
+    */
+   protected $_resource = null;
 
    /**
     * getName()
@@ -43,6 +63,74 @@ class Xtoph_Tool_Project_Context_Propel_ActiveValues
    public function getName()
    {
       return 'ActiveValues';
+   }
+
+   /**
+    * getPersistentAttributes
+    *
+    * @return array
+    */
+   public function getPersistentAttributes()
+   {
+      $a = array(
+          'schema' => $this->_schema,
+          'table' => $this->_table,
+          'column' => $this->_column
+      );
+      return $a;
+   }
+
+   public function init()
+   {
+      $this->_schema = $this->_resource->getAttribute('schema');
+      $this->_table = $this->_resource->getAttribute('table');
+      $this->_column = $this->_resource->getAttribute('column');
+   }
+
+   /**
+    * setResource()
+    *
+    * @param Zend_Tool_Project_Profile_Resource $resource
+    * @return Zend_Tool_Project_Context_Filesystem_Abstract
+    */
+   public function setResource(Zend_Tool_Project_Profile_Resource $resource)
+   {
+      $this->_resource = $resource;
+      return $this;
+   }
+
+   public function setSchema($schema)
+   {
+      $this->_schema = (string) $schema;
+      return $this;
+   }
+
+   public function setTable($table)
+   {
+      Zend_Debug::dump($table);
+      $this->_table = (string) $table;
+      return $this;
+   }
+
+   public function setColumn($column)
+   {
+      $this->_column = (string) $column;
+      return $this;
+   }
+
+   public function getSchema()
+   {
+      return $this->_schema;
+   }
+
+   public function getTable()
+   {
+      return $this->_table;
+   }
+
+   public function getColumn()
+   {
+      return $this->_column;
    }
 
 }
