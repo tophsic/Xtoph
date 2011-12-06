@@ -33,28 +33,44 @@ class Xtoph_Tool_Project_Provider_PropelColumn
     extends Xtoph_Tool_Project_Provider_PropelAbstract
     implements Zend_Tool_Framework_Provider_Pretendable
 {
-   const TYPE_VARCHAR = 'VARCHAR';
-   const TYPE_INTEGER = 'INTEGER';
 
    protected $_specialties = array(
+       'AutoIncrement',
+       'DefaultValue',
+       'Name',
        'PrimaryKey',
        'Required',
        'Size',
        'Type'
    );
 
-   protected function _setColumnAttributes($name, $value, $column, $table,
+   /**
+    * @param string $name
+    * @param string $value
+    * @param string $column
+    * @param string $table
+    * @param Xtoph_Tool_Project_Propel_Schema $schema
+    * @return SimpleXMLElement Column node
+    */
+   protected function _setColumnAttribute($name, $value, $column, $table,
        Xtoph_Tool_Project_Propel_Schema $schema)
    {
       if (!$schema->hasColumn($column, $table)) {
          throw new Zend_Tool_Project_Provider_Exception("Column '$column' does not exists in table '$table'");
       }
-      $attribute = $schema->setColumnAttribute($name, $value, $column, $table);
-      return $attribute;
+      $column = $schema->setColumnAttribute($name, $value, $column, $table);
+      return $column;
    }
 
-   protected function _createColumn($name, $table, $force,
-       Xtoph_Tool_Project_Propel_Schema $schema)
+   /**
+    * @param string $name
+    * @param string $table
+    * @param Xtoph_Tool_Project_Propel_Schema $schema
+    * @param boolean $force
+    * @return 
+    */
+   protected function _createColumn($name, $table,
+       Xtoph_Tool_Project_Propel_Schema $schema, $force = false)
    {
       $column = null;
       if ($schema->hasColumn($name, $table) && $force === false) {
@@ -86,8 +102,8 @@ class Xtoph_Tool_Project_Provider_PropelColumn
             throw new Zend_Tool_Project_Provider_Exception("Schema '$schema' could not be initialized");
          }
 
-         $column = $this->_createColumn($name, $table, $force,
-             $this->_loadedSchema);
+         $column = $this->_createColumn($name, $table, $this->_loadedSchema,
+             $force);
          Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile,
              $schema, $table, $name);
 
@@ -109,7 +125,7 @@ class Xtoph_Tool_Project_Provider_PropelColumn
        $schema = null)
    {
       $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
-      
+
       $request = $this->_registry->getRequest();
       $response = $this->_registry->getResponse();
 
@@ -126,15 +142,18 @@ class Xtoph_Tool_Project_Provider_PropelColumn
 
          $this->initializeSchema($schema);
 
-         $attributes = $this->_setColumnAttributes($name, $value, $column,
+         $column = $this->_setColumnAttribute($name, $value, $column,
              $table, $this->_loadedSchema);
+         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile,
+             $schema, $table, $column['name']);
 
-         if (!is_null($attributes)) {
+         if (!is_null($column)) {
             if ($request->isPretend()) {
                $response->appendContent("Would create column attribute '$name' in column '$table.$column'");
             } else {
                $response->appendContent("Creating column attribute '$name' in column '$table.$column'");
                $this->_storeSchema();
+               $this->_storeProfile();
             }
          } else {
             throw new Zend_Tool_Project_Profile_Exception('Column attribute creation failed');
@@ -144,24 +163,49 @@ class Xtoph_Tool_Project_Provider_PropelColumn
       }
    }
 
-   public function setAttributeRequired($value = true)
+   public function setAttributeRequired($value = "true")
    {
-      
+      $this->setAttribute(Xtoph_Tool_Project_Propel_Schema::COLUMN_ATTRIBUTE_REQUIRED,
+          $value);
    }
 
-   public function setAttributePrimaryKey($value = true)
+   public function setAttributePrimaryKey($value = "true")
    {
-      
+      $this->setAttribute(Xtoph_Tool_Project_Propel_Schema::COLUMN_ATTRIBUTE_PRIMARYKEY,
+          $value);
    }
 
-   public function setAttributeSize($value = '0')
+   public function setAttributeSize($value = "0")
    {
-      
+      $this->setAttribute(Xtoph_Tool_Project_Propel_Schema::COLUMN_ATTRIBUTE_SIZE,
+          $value);
    }
 
-   public function setAttributeType($value = self::TYPE_VARCHAR)
+   public function setAttributeDefaultValue($value = "")
    {
-      
+      $this->setAttribute(Xtoph_Tool_Project_Propel_Schema::COLUMN_ATTRIBUTE_DEFAULTVALUE,
+          $value);
+   }
+
+   public function setAttributeType($value = Xtoph_Tool_Project_Propel_Schema::TYPE_VARCHAR)
+   {
+      $this->setAttribute(Xtoph_Tool_Project_Propel_Schema::COLUMN_ATTRIBUTE_TYPE,
+          $value);
+   }
+
+   public function setAttributeAutoIncrement($value = "true")
+   {
+      $this->setAttribute(Xtoph_Tool_Project_Propel_Schema::COLUMN_ATTRIBUTE_AUTOINCREMENT,
+          $value);
+   }
+
+   public function setAttributeName($value)
+   {
+      if (empty($value)) {
+         throw new Zend_Tool_Project_Profile_Exception("Value could not be empty");
+      }
+      $this->setAttribute(Xtoph_Tool_Project_Propel_Schema::COLUMN_ATTRIBUTE_NAME,
+          $value);
    }
 
    public function delete()

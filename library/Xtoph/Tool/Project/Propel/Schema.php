@@ -37,10 +37,66 @@ class Xtoph_Tool_Project_Propel_Schema
    const XPATH_TABLE = "/database/table[@name='%s']";
    const XPATH_COLUMN = "column[@name='%s']";
 
+   const TYPE_VARCHAR = 'VARCHAR';
+   const TYPE_INTEGER = 'INTEGER';
+
+   const COLUMN_ATTRIBUTE_NAME = 'name';
+   const COLUMN_ATTRIBUTE_PHPNAME = 'phpName';
+   const COLUMN_ATTRIBUTE_TYPE = 'type';
+   const COLUMN_ATTRIBUTE_PRIMARYKEY = 'primaryKey';
+   const COLUMN_ATTRIBUTE_AUTOINCREMENT = 'autoIncrement';
+   const COLUMN_ATTRIBUTE_REQUIRED = 'required';
+   const COLUMN_ATTRIBUTE_SIZE = 'size';
+   const COLUMN_ATTRIBUTE_DEFAULTVALUE = 'defaultValue';
+
    /**
     * @var SimpleXMLElement
     */
    protected $_xml = null;
+
+   public static function isColumnAttributeValid($name, $value)
+   {
+      if (!in_array($name,
+              array(
+              self::COLUMN_ATTRIBUTE_AUTOINCREMENT,
+              self::COLUMN_ATTRIBUTE_NAME,
+              self::COLUMN_ATTRIBUTE_PHPNAME,
+              self::COLUMN_ATTRIBUTE_PRIMARYKEY,
+              self::COLUMN_ATTRIBUTE_REQUIRED,
+              self::COLUMN_ATTRIBUTE_SIZE,
+              self::COLUMN_ATTRIBUTE_TYPE,
+              self::COLUMN_ATTRIBUTE_DEFAULTVALUE
+          ))) {
+         throw new Xtoph_Tool_Project_Propel_SchemaException("Attributes '$name' is not valid");
+      }
+      switch ($name) {
+         case self::COLUMN_ATTRIBUTE_TYPE:
+            if (!in_array($value,
+                    array(
+                    self::TYPE_INTEGER,
+                    self::TYPE_VARCHAR
+                ))) {
+               throw new Xtoph_Tool_Project_Propel_SchemaException("Value '$value' is not valid for '$name' attribute");
+            }
+            break;
+         case self::COLUMN_ATTRIBUTE_SIZE:
+            if (!is_numeric($value)) {
+               throw new Xtoph_Tool_Project_Propel_SchemaException("Value '$value' is not valid for '$name' attribute");
+            }
+            break;
+         case self::COLUMN_ATTRIBUTE_PRIMARYKEY:
+         case self::COLUMN_ATTRIBUTE_REQUIRED:
+            if (!in_array($value,
+                    array(
+                    'true',
+                    'false'
+                ))) {
+               throw new Xtoph_Tool_Project_Propel_SchemaException("Value '$value' is not valid for '$name' attribute");
+            }
+            break;
+      }
+      return true;
+   }
 
    protected static function _normalize($name)
    {
@@ -93,6 +149,11 @@ class Xtoph_Tool_Project_Propel_Schema
       }
    }
 
+   /**
+    * @param string $name
+    * @param string $table
+    * @return SimpleXMLElement
+    */
    public function addColumn($name, $table)
    {
       $xml = $this->getTable($table, true);
@@ -127,11 +188,19 @@ class Xtoph_Tool_Project_Propel_Schema
       }
    }
 
+   /**
+    * @param string $name
+    * @param string $value
+    * @param string $column
+    * @param string $table
+    * @return SimpleXMLElement Column node
+    */
    public function setColumnAttribute($name, $value, $column, $table)
    {
+      self::isColumnAttributeValid($name, $value);
       $column = $this->getColumn($column, $table, true);
       $column[$name] = $value;
-      return $column[$name];
+      return $column;
    }
 
    /**
