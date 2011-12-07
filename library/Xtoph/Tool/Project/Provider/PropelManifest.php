@@ -58,7 +58,7 @@ Zend_Tool_Framework_Manifest_ProviderManifestable
       return array(
           'Xtoph_Tool_Project_Provider_Propel',
           'Xtoph_Tool_Project_Provider_PropelSchema',
-          'Xtoph_Tool_Project_Provider_PropelDatabase',
+          'Xtoph_Tool_Project_Provider_PropelIndex',
           'Xtoph_Tool_Project_Provider_PropelTable',
           'Xtoph_Tool_Project_Provider_PropelColumn',
           'Xtoph_Tool_Project_Provider_PropelBehavior',

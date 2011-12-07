@@ -29,23 +29,18 @@ require_once 'Zend/Tool/Project/Provider/Exception.php';
  * @copyright  Christophe Sicard (http://christophe.plom.net)
  * @license    http://christophe.plom.net/license/new-bsd     New BSD License
  */
-class Xtoph_Tool_Project_Provider_PropelDatabase
+class Xtoph_Tool_Project_Provider_PropelIndex
     extends Xtoph_Tool_Project_Provider_Abstract
 {
 
    public function create()
    {
-      $this->_registry->getResponse()->appendContent('TODO: create action in propel-database provider');
+      $this->_registry->getResponse()->appendContent('TODO: create action in propel-index provider');
    }
 
    public function delete()
    {
-      $this->_registry->getResponse()->appendContent('TODO: delete action in propel-database provider');
-   }
-
-   public function show()
-   {
-      $this->_registry->getResponse()->appendContent('TODO: show action in propel-database provider');
+      $this->_registry->getResponse()->appendContent('TODO: delete action in propel-index provider');
    }
 
 }
