@@ -49,24 +49,36 @@ class Xtoph_Tool_Project_Provider_PropelTable
       return $table;
    }
 
-   public function create($name, $schema = null,
-       $force = false)
+   public function _deleteTable($name, Xtoph_Tool_Project_Propel_Schema $schema)
+   {
+      $table = null;
+      if (!$schema->hasTable($name)) {
+         throw new Zend_Tool_Project_Profile_Exception("Table '$name' does not exists");
+      } else {
+         $schema->removeTable($name);
+      }
+      return $table;
+   }
+
+   public function create($name, $schema = null, $force = false)
    {
       $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
 
       $request = $this->_registry->getRequest();
       $response = $this->_registry->getResponse();
 
-      
-      $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile, $schema);
+
+      $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile,
+              $schema);
 
       if (!is_null($schema)) {
          if (!$this->initializeSchema($schema)) {
             throw new Zend_Tool_Project_Provider_Exception("Schema '$schema' could not be initialized");
          }
-         
+
          $table = $this->_createTable($name, $this->_loadedSchema, $force);
-         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile, $schema, $name);
+         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile,
+             $schema, $name);
 
          if (!is_null($table)) {
             if ($request->isPretend()) {
@@ -80,12 +92,42 @@ class Xtoph_Tool_Project_Provider_PropelTable
       } else {
          throw new Zend_Tool_Project_Profile_Exception('Schema name should be provided');
       }
-      
    }
 
-   public function delete()
+   public function delete($name, $schema = null)
    {
-      $this->_registry->getResponse()->appendContent('TODO: delete action in propel-table provider');
+      $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+
+      $request = $this->_registry->getRequest();
+      $response = $this->_registry->getResponse();
+
+
+      $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile,
+              $schema);
+
+      if (!is_null($schema)) {
+         if (!$this->initializeSchema($schema)) {
+            throw new Zend_Tool_Project_Provider_Exception("Schema '$schema' could not be initialized");
+         }
+
+         $table = $this->_deleteTable($name, $this->_loadedSchema);
+         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile,
+             $schema, '', '');
+
+         if (is_null($table)) {
+            if ($request->isPretend()) {
+               $response->appendContent("Would delete table '$name'");
+            } else {
+               $response->appendContent("Deleting table '$name'");
+               $this->_storeSchema();
+               $this->_storeProfile();
+            }
+         } else {
+            throw new Zend_Tool_Project_Provider_Exception("Table '$name' seems to not be deleted");
+         }         
+      } else {
+         throw new Zend_Tool_Project_Profile_Exception('Schema name should be provided');
+      }
    }
 
 }
