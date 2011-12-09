@@ -30,7 +30,8 @@ require_once 'Zend/Tool/Project/Provider/Exception.php';
  * @license    http://christophe.plom.net/license/new-bsd     New BSD License
  */
 class Xtoph_Tool_Project_Provider_PropelIndex
-    extends Xtoph_Tool_Project_Provider_Abstract
+    extends Xtoph_Tool_Project_Provider_PropelAbstract
+    implements Zend_Tool_Framework_Provider_Pretendable
 {
 
    public function create()

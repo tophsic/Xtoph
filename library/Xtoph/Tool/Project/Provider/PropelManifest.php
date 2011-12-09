@@ -61,6 +61,7 @@ Zend_Tool_Framework_Manifest_ProviderManifestable
           'Xtoph_Tool_Project_Provider_PropelColumn',
           'Xtoph_Tool_Project_Provider_PropelForeignKey',
           'Xtoph_Tool_Project_Provider_PropelIndex',
+          'Xtoph_Tool_Project_Provider_PropelUnique',
           'Xtoph_Tool_Project_Provider_PropelSchema',
           'Xtoph_Tool_Project_Provider_PropelTable',
           'Xtoph_Tool_Project_Provider_PropelValidator'

@@ -40,6 +40,7 @@ class Xtoph_Tool_Project_Propel_Schema
    const XPATH_TABLE = "/database/table[@name='%s']";
    const XPATH_VALIDATOR = "validator[@column='%s']";
    const XPATH_VALIDATORRULE = "rule[@name='%s']";
+   const XPATH_UNIQUE = "unique[@name='%s']";
 
    const TYPE_VARCHAR = 'VARCHAR';
    const TYPE_INTEGER = 'INTEGER';
@@ -446,6 +447,40 @@ class Xtoph_Tool_Project_Propel_Schema
    {
       $a = $this->_xpath(sprintf(
               self::XPATH_TABLE . '/' . self::XPATH_FOREIGNKEY, $table, $name));
+      if ($first) {
+         return $a[0];
+      } else {
+         return $a;
+      }
+   }
+
+   public function addUnique($name, array $columns, $table)
+   {
+      /* @var $xml SimpleXMLElement */
+      $xml = $this->getTable($table, true);
+      $unique = $xml->addChild('unique');
+      $unique['name'] = $name;
+      foreach ($columns as $column) {
+         $unique_column = $unique->addChild('unique-column');
+         $unique_column['name'] = $column;
+      }
+      return $unique;
+   }
+
+   public function hasUnique($name, $table)
+   {
+      return $this->_hasNode($this->getUnique($name, $table));
+   }
+
+   public function removeUnique($name, $table)
+   {
+      $this->_removeNode($this->getUnique($name, $table));
+   }
+
+   public function getUnique($name, $table, $first = false)
+   {
+      $a = $this->_xpath(sprintf(
+              self::XPATH_TABLE . '/' . self::XPATH_UNIQUE, $table, $name));
       if ($first) {
          return $a[0];
       } else {
