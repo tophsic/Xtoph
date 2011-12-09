@@ -37,6 +37,7 @@ class Xtoph_Tool_Project_Propel_Schema
    const XPATH_COLUMN = "column[@name='%s']";
    const XPATH_FOREIGNKEY = "foreign-key[@name='%s']";
    const XPATH_FOREIGNKEY_REFERENCE = "foreign-key/reference[@local='%s']";
+   const XPATH_INDEX = "index[@name='%s']";
    const XPATH_TABLE = "/database/table[@name='%s']";
    const XPATH_VALIDATOR = "validator[@column='%s']";
    const XPATH_VALIDATORRULE = "rule[@name='%s']";
@@ -481,6 +482,41 @@ class Xtoph_Tool_Project_Propel_Schema
    {
       $a = $this->_xpath(sprintf(
               self::XPATH_TABLE . '/' . self::XPATH_UNIQUE, $table, $name));
+      if ($first) {
+         return $a[0];
+      } else {
+         return $a;
+      }
+   }
+
+
+   public function addIndex($name, array $columns, $table)
+   {
+      /* @var $xml SimpleXMLElement */
+      $xml = $this->getTable($table, true);
+      $index = $xml->addChild('index');
+      $index['name'] = $name;
+      foreach ($columns as $column) {
+         $index_column = $index->addChild('index-column');
+         $index_column['name'] = $column;
+      }
+      return $index;
+   }
+
+   public function hasIndex($name, $table)
+   {
+      return $this->_hasNode($this->getIndex($name, $table));
+   }
+
+   public function removeIndex($name, $table)
+   {
+      $this->_removeNode($this->getIndex($name, $table));
+   }
+
+   public function getIndex($name, $table, $first = false)
+   {
+      $a = $this->_xpath(sprintf(
+              self::XPATH_TABLE . '/' . self::XPATH_INDEX, $table, $name));
       if ($first) {
          return $a[0];
       } else {
