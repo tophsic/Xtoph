@@ -45,11 +45,11 @@ class Xtoph_Tool_Project_Provider_PropelValidator
    public function _createValidator($rule, $value, $message, $column, $table,
        Xtoph_Tool_Project_Propel_Schema $schema)
    {
-      if (!$schema->hasColumn($column, $table)) {
+      if ($schema->hasColumn($column, $table) !== true) {
          throw new Zend_Tool_Project_Provider_Exception("Column '$column' does not exists in table '$table'");
       }
       $validator = null;
-      if (!$schema->hasValidator($column, $table)) {
+      if ($schema->hasValidator($column, $table) !== true) {
          $validator = $schema->addValidator($column, $table);
       }
       $validator = $schema->setValidatorRule($rule, $value, $message, $column,

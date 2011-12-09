@@ -34,8 +34,10 @@ class Xtoph_Tool_Project_Propel_SchemaException
  */
 class Xtoph_Tool_Project_Propel_Schema
 {
-   const XPATH_TABLE = "/database/table[@name='%s']";
    const XPATH_COLUMN = "column[@name='%s']";
+   const XPATH_FOREIGNKEY = "foreign-key[@name='%s']";
+   const XPATH_FOREIGNKEY_REFERENCE = "foreign-key/reference[@local='%s']";
+   const XPATH_TABLE = "/database/table[@name='%s']";
    const XPATH_VALIDATOR = "validator[@column='%s']";
    const XPATH_VALIDATORRULE = "rule[@name='%s']";
 
@@ -57,10 +59,27 @@ class Xtoph_Tool_Project_Propel_Schema
    const VALIDATOR_RULE_REQUIRED = 'required';
    const VALIDATOR_RULE_TYPE = 'type';
 
+   const FOREIGNKEY_RESTRICT = "restrict";
+   const FOREIGNKEY_CASCADE = "cascade";
+
    /**
     * @var SimpleXMLElement
     */
    protected $_xml = null;
+
+   /**
+    * @param string $name
+    * @param string $foreignTable 
+    * @return string
+    */
+   public static function getForeignKeyName($name, $foreignTable, $column)
+   {
+      //TODO Check if foreign key allready exists
+      if (empty($name)) {
+         $name = 'fk_' . $column . '_to_' . $foreignTable;
+      }
+      return $name;
+   }
 
    /**
     * @todo Complete default validator rule message
@@ -71,21 +90,26 @@ class Xtoph_Tool_Project_Propel_Schema
     * @param string $table
     * @return string 
     */
-   public static function getValidatorRuleMessage($rule, $value, $message, $column, $table)
+   public static function getValidatorRuleMessage($rule, $value, $message,
+       $column, $table)
    {
       if (empty($message)) {
          switch ($rule) {
             case self::VALIDATOR_RULE_MINLENGTH:
-               $message = sprintf("The '%s.%s' field must be %s characters long.", $table, $column, $value);
+               $message = sprintf("The '%s.%s' field must be %s characters long.",
+                   $table, $column, $value);
                break;
             case self::VALIDATOR_RULE_MAXLENGTH:
-               $message = sprintf("The '%s.%s' field must be not longer than %s characters.", $table, $column, $value);
+               $message = sprintf("The '%s.%s' field must be not longer than %s characters.",
+                   $table, $column, $value);
                break;
             case self::VALIDATOR_RULE_REQUIRED:
-               $message = sprintf("The '%s.%s' field is required.", $table, $column);
+               $message = sprintf("The '%s.%s' field is required.", $table,
+                   $column);
                break;
             case self::VALIDATOR_RULE_TYPE:
-               $message = sprintf("The '%s.%s' field must be an %s type.", $table, $column, $value);
+               $message = sprintf("The '%s.%s' field must be an %s type.",
+                   $table, $column, $value);
                break;
          }
       }
@@ -192,6 +216,11 @@ class Xtoph_Tool_Project_Propel_Schema
       $this->_removeNode($this->getTable($name));
    }
 
+   /**
+    * @param string $name
+    * @param string $first
+    * @return mixed array|SimpleXMLElement
+    */
    public function getTable($name, $first = false)
    {
       $a = $this->_xpath(sprintf(self::XPATH_TABLE, $name));
@@ -218,8 +247,8 @@ class Xtoph_Tool_Project_Propel_Schema
 
    public function hasColumn($name, $table)
    {
-      if (!$this->hasTable($table)) {
-         return new Xtoph_Tool_Project_Propel_SchemaException("Table '$table' doesn't exists");
+      if ($this->hasTable($table) !== true) {
+         throw new Xtoph_Tool_Project_Propel_SchemaException("Table '$table' doesn't exists");
       }
       return $this->_hasNode($this->getColumn($name, $table));
    }
@@ -278,14 +307,16 @@ class Xtoph_Tool_Project_Propel_Schema
     * @param SimpleXMLElement $validator
     * @return SimpleXMLElement validator node
     */
-   public function setValidatorRule($rule, $value, $message, $column, $table, SimpleXMLElement $validator = null)
+   public function setValidatorRule($rule, $value, $message, $column, $table,
+       SimpleXMLElement $validator = null)
    {
       self::isValidatorRuleValid($rule, $value);
       if (is_null($validator)) {
          $validator = $this->getValidator($column, $table, true);
       }
       $this->removeValidatorRule($validator, $rule);
-      $message = self::getValidatorRuleMessage($rule, $value, $message, $column, $table);
+      $message = self::getValidatorRuleMessage($rule, $value, $message, $column,
+              $table);
       $this->addValidatorRule($validator, $rule, $value, $message);
       return $validator;
    }
@@ -327,8 +358,7 @@ class Xtoph_Tool_Project_Propel_Schema
    {
       $a = $this->_xpath(sprintf(
               self::XPATH_VALIDATORRULE, $rule
-          ),
-          $validator);
+          ), $validator);
       if ($first) {
          return $a[0];
       } else {
@@ -344,7 +374,7 @@ class Xtoph_Tool_Project_Propel_Schema
    {
       $this->_removeNode($this->getValidatorRule($validator, $rule));
    }
-   
+
    /**
     * @param string $column
     * @param string $table
@@ -364,6 +394,63 @@ class Xtoph_Tool_Project_Propel_Schema
       }
       $rule['message'] = $message;
       return $rule;
+   }
+
+   public function addForeignKey($key, $foreignTable, $name, $column, $table)
+   {
+      if ($this->hasForeignKeyReference($column, $table) === true) {
+         throw new Xtoph_Tool_Project_Propel_SchemaException("Column '$table.$column' has already a foreign-key");
+      }
+      /* @var $xml SimpleXMLElement */
+      $xml = $this->getTable($table, true);
+      $foreignKey = $xml->addChild('foreign-key');
+      $foreignKey['foreignTable'] = $foreignTable;
+      $foreignKey['name'] = $name;
+      $foreignKey['skipSql'] = 'true';
+      $foreignKey['onUpdate'] = self::FOREIGNKEY_RESTRICT;
+      $foreignKey['onDelete'] = self::FOREIGNKEY_RESTRICT;
+      $reference = $foreignKey->addChild('reference');
+      $reference['local'] = $column;
+      $reference['foreign'] = $key;
+      return $foreignKey;
+   }
+
+   public function hasForeignKeyReference($column, $table)
+   {
+      return $this->_hasNode($this->getForeignKeyReference($column, $table));
+   }
+
+   public function hasForeignKey($name, $table)
+   {
+      return $this->_hasNode($this->getForeignKey($name, $table));
+   }
+
+   public function removeForeignKey($name, $table)
+   {
+      $this->_removeNode($this->getForeignKey($name, $table));
+   }
+
+   public function getForeignKeyReference($column, $table, $first = false)
+   {
+      $a = $this->_xpath(sprintf(
+              self::XPATH_TABLE . '/' . self::XPATH_FOREIGNKEY_REFERENCE,
+              $table, $column));
+      if ($first) {
+         return $a[0];
+      } else {
+         return $a;
+      }
+   }
+
+   public function getForeignKey($name, $table, $first = false)
+   {
+      $a = $this->_xpath(sprintf(
+              self::XPATH_TABLE . '/' . self::XPATH_FOREIGNKEY, $name, $table));
+      if ($first) {
+         return $a[0];
+      } else {
+         return $a;
+      }
    }
 
    /**

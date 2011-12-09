@@ -105,7 +105,7 @@ class Xtoph_Tool_Project_Provider_PropelTable
       $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile,
               $schema);
 
-      if (!is_null($schema)) {
+      if (!empty($schema)) {
          if (!$this->initializeSchema($schema)) {
             throw new Zend_Tool_Project_Provider_Exception("Schema '$schema' could not be initialized");
          }

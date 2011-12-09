@@ -136,9 +136,9 @@ class Xtoph_Tool_Project_Provider_PropelColumn
       $column = Xtoph_Tool_Project_Provider_Propel::getActiveColumn($this->_loadedProfile,
               $column);
 
-      if (!is_null($schema)
-          && !is_null($table)
-          && !is_null($column)) {
+      if (!empty($schema)
+          && !empty($table)
+          && !empty($column)) {
 
          $this->initializeSchema($schema);
 
@@ -211,6 +211,9 @@ class Xtoph_Tool_Project_Provider_PropelColumn
    public function delete()
    {
       $this->_registry->getResponse()->appendContent('TODO: delete action in propel-column provider');
+      //TODO delete column
+      //TODO delete validators
+      //TODO delete foreign keys
    }
 
 }
