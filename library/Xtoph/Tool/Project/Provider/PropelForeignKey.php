@@ -44,12 +44,25 @@ class Xtoph_Tool_Project_Provider_PropelForeignKey
          throw new Zend_Tool_Project_Provider_Exception("Column '$column' does not exist in table '$table'");
       }
       $foreignKey = null;
-      $name = Xtoph_Tool_Project_Propel_Schema::getForeignKeyName($name, $foreignTable, $column);
+      $name = Xtoph_Tool_Project_Propel_Schema::getForeignKeyName($name,
+              $foreignTable, $column);
       if ($schema->hasForeignKey($name, $table) === true) {
          throw new Zend_Tool_Project_Provider_Exception("Column '$table.$column' has already a foreign-key");
       }
       $foreignKey = $schema->addForeignKey($key, $foreignTable, $name, $column,
           $table);
+      return $foreignKey;
+   }
+
+   protected function _deleteForeignKey($name, $table,
+       Xtoph_Tool_Project_Propel_Schema $schema)
+   {
+      $foreignKey = null;
+      if ($schema->hasForeignKey($name, $table) !== true) {
+         throw new Zend_Tool_Project_Provider_Exception("Table '$table' does not have a foreign-key named '$name'");
+      }
+      $foreignKey = $schema->getForeignKey($name, $table);
+      $schema->removeForeignKey($name, $table);
       return $foreignKey;
    }
 
@@ -99,9 +112,47 @@ class Xtoph_Tool_Project_Provider_PropelForeignKey
       }
    }
 
-   public function delete()
+   public function delete($name = '', $table = '', $schema = '')
    {
-      $this->_registry->getResponse()->appendContent('TODO: delete action in propel-behavior provider');
+      $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
+
+      $request = $this->_registry->getRequest();
+      $response = $this->_registry->getResponse();
+
+      $schema = Xtoph_Tool_Project_Provider_Propel::getActiveSchema($this->_loadedProfile,
+              $schema);
+      $table = Xtoph_Tool_Project_Provider_Propel::getActiveTable($this->_loadedProfile,
+              $table);
+      $column = Xtoph_Tool_Project_Provider_Propel::getActiveColumn($this->_loadedProfile,
+              '');
+
+      if (!empty($schema)
+          && !empty($table)) {
+
+         if (!$this->initializeSchema($schema)) {
+            throw new Zend_Tool_Project_Provider_Exception("Schema '$schema' could not be initialized");
+         }
+
+         $foreignKey = $this->_deleteForeignKey($name, $table,
+             $this->_loadedSchema);
+
+         Xtoph_Tool_Project_Provider_Propel::setActiveValues($this->_loadedProfile,
+             $schema, $table, $column);
+
+         if (!is_null($foreignKey)) {
+            if ($request->isPretend()) {
+               $response->appendContent("Would delete foreign-key '$name' in table '$table'");
+            } else {
+               $response->appendContent("Deleting foreign-key '$name' in table '$table'");
+               $this->_storeSchema();
+               $this->_storeProfile();
+            }
+         } else {
+            throw new Zend_Tool_Project_Profile_Exception('Foreign key was not deleted');
+         }
+      } else {
+         throw new Zend_Tool_Project_Profile_Exception('Schema, table names should be provided');
+      }
    }
 
 }

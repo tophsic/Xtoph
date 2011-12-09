@@ -445,7 +445,7 @@ class Xtoph_Tool_Project_Propel_Schema
    public function getForeignKey($name, $table, $first = false)
    {
       $a = $this->_xpath(sprintf(
-              self::XPATH_TABLE . '/' . self::XPATH_FOREIGNKEY, $name, $table));
+              self::XPATH_TABLE . '/' . self::XPATH_FOREIGNKEY, $table, $name));
       if ($first) {
          return $a[0];
       } else {
