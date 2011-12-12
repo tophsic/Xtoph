@@ -60,7 +60,7 @@ class Xtoph_Tool_Project_Provider_PropelSchema
           )),
           $schemaResource->createResource('ConnectionConfigFile',
               array(
-              'file' => 'builtime-conf.xml',
+              'file' => 'buildtime-conf.xml',
               'project' => $schemaResource->getSchemaName(),
               'adapter' => $adapter
           ))
