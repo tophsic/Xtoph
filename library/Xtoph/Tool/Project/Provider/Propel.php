@@ -46,31 +46,41 @@ class Xtoph_Tool_Project_Provider_Propel
       return $profile->search($profileSearchParams);
    }
 
-   public static function getActiveSchema(Zend_Tool_Project_Profile $profile, $schema)
+   public static function getActiveSchema(Zend_Tool_Project_Profile $profile,
+       $schema = null)
    {
-      $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
-      $activeSchema = $resource->getContext()->getSchema();
-      if (!empty($activeSchema)) {
-         $schema = $activeSchema;
+      if (is_null($schema)) {
+         $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
+         $activeSchema = $resource->getContext()->getSchema();
+         if (!empty($activeSchema)) {
+            $schema = $activeSchema;
+         }
       }
       return $schema;
    }
-   public static function getActiveTable(Zend_Tool_Project_Profile $profile, $table)
+
+   public static function getActiveTable(Zend_Tool_Project_Profile $profile,
+       $table = null)
    {
-      $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
-      $activeTAble = $resource->getContext()->getTable();
-      if (!empty($activeTAble)) {
-         $table = $activeTAble;
+      if (is_null($table)) {
+         $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
+         $activeTAble = $resource->getContext()->getTable();
+         if (!empty($activeTAble)) {
+            $table = $activeTAble;
+         }
       }
       return $table;
    }
+
    public static function getActiveColumn(Zend_Tool_Project_Profile $profile,
-       $column)
+       $column = null)
    {
-      $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
-      $activeColumn = $resource->getContext()->getColumn();
-      if (!empty($activeColumn)) {
-         $column = $activeColumn;
+      if (is_null($column)) {
+         $resource = Xtoph_Tool_Project_Provider_Propel::getActiveValuesResources($profile);
+         $activeColumn = $resource->getContext()->getColumn();
+         if (!empty($activeColumn)) {
+            $column = $activeColumn;
+         }
       }
       return $column;
    }
